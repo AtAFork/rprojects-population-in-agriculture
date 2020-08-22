@@ -1,0 +1,65 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+
+rawData <- as_tibble(read.csv(file = '~/Desktop/API_SL.AGR.EMPL.ZS_DS2_en_csv_v2_1217816/API_SL.AGR.EMPL.ZS_DS2_en_csv_v2_1217816.csv', ,header = TRUE, skip = 3))
+
+```
+
+```{r}
+rawData
+head(rawData) 
+colnames(rawData)
+
+```
+
+
+
+```{r}
+fixed <- rawData %>%
+  gather(key = Year, value = Percentage, X1960:X2019, convert = TRUE) %>% 
+  select(Country.Name, Year, Percentage) %>%
+  filter(!is.na(Percentage)) %>%
+  mutate(Year = as.numeric(sub("X","",Year)))
+```
+
+```{r}
+tail(fixed, n = 5)
+count(fixed)
+```
+
+# figure out how to just get the top 20 countries sorted, and then ungroup
+
+```{r}
+above75 <- fixed %>% 
+  group_by(Country.Name) %>% 
+  mutate(avg = mean(Percentage)) %>% 
+  arrange(desc(avg)) %>%
+  filter( avg >= 75)
+```
+
+```{r}
+
+```
+
+
+```{r}
+above75 %>% ggplot(aes(x = Year, y = Percentage)) +
+ geom_point(alpha = 0.7, show.legend = FALSE) +
+# Here comes the gganimate specific bits
+labs(title = 'Year: {frame_time}', x = 'Country', y = 'Percentage of Population working in Agriculture') +
+facet_wrap(~ Country.Name) +
+transition_time(Year) +
+ease_aes('linear')
+
+```
+
+
+
+ggplot(datasaurus_dozen, aes(x=x, y=y))+
+  geom_point()+
+  theme_minimal() +
+  transition_states(dataset, 3, 1) + 
+  ease_aes('cubic-in-out')
